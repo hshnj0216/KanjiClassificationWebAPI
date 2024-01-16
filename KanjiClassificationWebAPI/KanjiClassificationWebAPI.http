@@ -1,0 +1,6 @@
+@KanjiClassificationWebAPI_HostAddress = http://localhost:5134
+
+POST {{KanjiClassificationWebAPI_HostAddress}}/api/Classification/ClassifyImage
+Accept: multipart/form-data
+
+###
