@@ -1,7 +1,7 @@
 # KanjiClassificationWebAPI
 
 ## Overview
-This is an ASP.NET Core Web API that uses an ONNX model to classify submitted images of Kanji handwriting or hand-drawing. The model was trained with PyTorch on 1,235 classes or Kanji characters from KanjiAlive and 82,250 white stroke and black background images. The dataset was split using train-test-split technique, the model scored ~94% accuracy during the tests. 
+This is an ASP.NET Core Web API that uses an ONNX model to classify submitted images of Kanji handwriting or hand-drawing. The model was trained with PyTorch on 1,235 classes or Kanji characters from KanjiAlive and 82,250 white stroke and black background images. The dataset was split using train-test-split technique. In the testing phase, the model achieved an accuracy of approximately 94%.
 
 ## Input
 The API accepts a single image data in binary format, for best results the image sent must be 224x224px with a white stroke and black background.
