@@ -9,21 +9,18 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["KanjiClassificationWebAPI/KanjiClassificationWebAPI.csproj", "KanjiClassificationWebAPI/"]
-RUN dotnet restore "./KanjiClassificationWebAPI/./KanjiClassificationWebAPI.csproj"
+COPY ["KanjiClassificationWebAPI.csproj", "./"]
+RUN dotnet restore "./KanjiClassificationWebAPI.csproj"
 RUN apt-get update && apt-get install -y libgomp1
 COPY . .
-WORKDIR "/src/KanjiClassificationWebAPI"
-RUN dotnet build "./KanjiClassificationWebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
-WORKDIR "/src/KanjiClassificationWebAPI"
-RUN ls -la
+RUN dotnet build "KanjiClassificationWebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./KanjiClassificationWebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-COPY ["KanjiClassificationWebAPI/kanjialive_kanjivg_classifier_v1.onnx", "/app/publish/"]
-COPY ["KanjiClassificationWebAPI/class_dict.json", "/app/publish/"]
+RUN dotnet publish "KanjiClassificationWebAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+COPY ["kanjialive_kanjivg_classifier_v1.onnx", "/app/publish/"]
+COPY ["class_dict.json", "/app/publish/"]
 WORKDIR /src
 RUN ls -la
 
