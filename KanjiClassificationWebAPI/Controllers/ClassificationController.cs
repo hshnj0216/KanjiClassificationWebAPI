@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ML.OnnxRuntime;
 using KanjiClassificationWebAPI.Processors;
+using Microsoft.Extensions.Logging;
 
 namespace KanjiClassificationWebAPI.Controllers
 {
@@ -22,45 +23,87 @@ namespace KanjiClassificationWebAPI.Controllers
         [HttpPost("ClassifyImage")]
         public IActionResult ClassifyImage(IFormFile imageBinary)
         {
-            _logger.LogInformation(imageBinary.ToString());
+            //Check for null or empty input
+            if(imageBinary == null ||  imageBinary.Length == 0)
+            {
+                return BadRequest("No image was uploaded.");
+            }
 
-            var tensor = ImageProcessor.ProcessImage(imageBinary);
+            //Validate image format
+            if(!imageBinary.ContentType.Equals("image/png"))
+            {
+                return BadRequest("Invalid image format. Please upload a PNG image.");
+            }
 
-            var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input.1", tensor) };
+            try
+            {
 
-            var outputs = _session.Run(inputs);
+                _logger.LogInformation(imageBinary.ToString());
 
-            var outputsArray = outputs.First().AsEnumerable<float>().ToArray();
+                var tensor = ImageProcessor.ProcessImage(imageBinary);
 
-            var maxValue = outputsArray.Max();
+                var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input.1", tensor) };
 
-            var maxValueIndex = Array.IndexOf(outputsArray, maxValue);
-            
-            var predictedValue = _classDict[maxValueIndex];
+                var outputs = _session.Run(inputs);
 
-            return Ok(predictedValue);
+                var outputsArray = outputs.First().AsEnumerable<float>().ToArray();
+
+                var maxValue = outputsArray.Max();
+
+                var maxValueIndex = Array.IndexOf(outputsArray, maxValue);
+
+                var predictedValue = _classDict[maxValueIndex];
+
+                return Ok(predictedValue);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while processing the image.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while processing the image.");
+            }
         }
 
         [HttpPost("InferTopKanjiClasses")]
         public IActionResult InferTopKanjiClasses(IFormFile imageBinary)
         {
-            var tensor = ImageProcessor.ProcessImage(imageBinary);
+            //Check for null or empty input
+            if (imageBinary == null || imageBinary.Length == 0)
+            {
+                return BadRequest("No image was uploaded.");
+            }
 
-            var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input.1", tensor) };
+            //Validate image format
+            if (!imageBinary.ContentType.Equals("image/png"))
+            {
+                return BadRequest("Invalid image format. Please upload a PNG image.");
+            }
 
-            var outputs = _session.Run(inputs);
+            try
+            {
 
-            var outputsArray = outputs.First().AsEnumerable<float>().ToArray();
+                var tensor = ImageProcessor.ProcessImage(imageBinary);
 
-            var top10ValuesWithIndices = outputsArray
-                .Select((value, index) => new { value, index })
-                .OrderByDescending(x => x.value)
-                .Take(10)
-                .ToArray();
+                var inputs = new List<NamedOnnxValue> { NamedOnnxValue.CreateFromTensor("input.1", tensor) };
 
-            var topClasses = top10ValuesWithIndices.Select(x => _classDict[x.index]).ToArray();
+                var outputs = _session.Run(inputs);
 
-            return Ok(topClasses);
+                var outputsArray = outputs.First().AsEnumerable<float>().ToArray();
+
+                var top10ValuesWithIndices = outputsArray
+                    .Select((value, index) => new { value, index })
+                    .OrderByDescending(x => x.value)
+                    .Take(10)
+                    .ToArray();
+
+                var topClasses = top10ValuesWithIndices.Select(x => _classDict[x.index]).ToArray();
+
+                return Ok(topClasses);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "An error occured while processing the image.");
+                return StatusCode(StatusCodes.Status500InternalServerError, "An error occured while processing the image.");
+            }
 
         }
     }

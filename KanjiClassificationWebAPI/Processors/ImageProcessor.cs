@@ -8,7 +8,7 @@ namespace KanjiClassificationWebAPI.Processors
 {
     public class ImageProcessor
     {
-        //Converts image binary to a tensor
+        //Converts image binary to a tensor for model consumption
         public static DenseTensor<float> ProcessImage(IFormFile imageBinary)
         {
             using var imageStream = new MemoryStream();
