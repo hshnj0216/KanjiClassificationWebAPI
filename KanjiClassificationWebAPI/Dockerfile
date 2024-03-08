@@ -22,12 +22,9 @@ RUN dotnet publish "KanjiClassificationWebAPI.csproj" -c $BUILD_CONFIGURATION -o
 COPY ["kanjialive_kanjivg_classifier_v1.onnx", "/app/publish/"]
 COPY ["class_dict.json", "/app/publish/"]
 WORKDIR /src
-RUN ls -la
-
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-RUN ls -la
 ENV ASPNETCORE_URLS http://*:8080
 ENTRYPOINT ["dotnet", "KanjiClassificationWebAPI.dll"]
