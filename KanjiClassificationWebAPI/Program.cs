@@ -6,9 +6,7 @@ using Microsoft.Extensions.Logging;
 var builder = WebApplication.CreateBuilder(args);
 
 var modelPath = builder.Configuration["ModelPath"];
-Console.WriteLine(modelPath);
 var dictionaryPath = builder.Configuration["ClassDictionaryPath"];
-Console.WriteLine(dictionaryPath);
 
 
 // Add services to the container.
